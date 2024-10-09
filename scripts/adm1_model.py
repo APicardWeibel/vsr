@@ -61,8 +61,6 @@ dates = {
 default_param = {"B0_prim": 450.0, "B0_bio": 250.0, "k_dis": 0.5}
 
 accu_cal_pars = {}
-accu_cal_pars_low = {}
-accu_cal_pars_high = {}
 
 accu_def_vsr_train = {}
 accu_def_vsr_test = {}
@@ -94,7 +92,7 @@ for name in V_liqs:
         for predig in predigs
     ]
 
-    opt_param_std, grid_res, param_uq = brute_force_search(
+    opt_param_std, grid_res, _ = brute_force_search(
         predigs,
         t_begs=t_begs,
         t_ends=t_ends,
@@ -103,17 +101,9 @@ for name in V_liqs:
     )
 
     accu_cal_pars[name] = opt_param_std
-    accu_cal_pars_low[name] = param_uq["CI_low"]
-    accu_cal_pars_high[name] = param_uq["CI_high"]
 
     io.rw_jsonlike.save(os.path.join(save_path, f"{name}_grid_res.json"), grid_res)
     io.rw_jsonlike.save(os.path.join(save_path, f"{name}_cal_par.json"), opt_param_std)
-    io.rw_jsonlike.save(
-        os.path.join(save_path, f"{name}_cal_par_lb.json"), param_uq["CI_low"]
-    )
-    io.rw_jsonlike.save(
-        os.path.join(save_path, f"{name}_cal_par_ub.json"), param_uq["CI_high"]
-    )
 
     # Calibrated param perf
     cal_res_train = analyze_vsr(
@@ -172,8 +162,6 @@ for name in V_liqs:
 tprint("Completed computations")
 # Convert to pandas
 df_cal_pars = pd.DataFrame(accu_cal_pars)
-df_cal_pars_low = pd.DataFrame(accu_cal_pars_low)
-df_cal_pars_high = pd.DataFrame(accu_cal_pars_high)
 
 df_def_vsr_train = pd.DataFrame(accu_def_vsr_train)
 df_def_vsr_test = pd.DataFrame(accu_def_vsr_test)
@@ -194,8 +182,6 @@ print(f"df_cal_vsr_test:\n{df_cal_vsr_test}\n")
 print(f"df_cal_vsr_all:\n{df_cal_vsr_all}\n")
 
 df_cal_pars.to_csv(os.path.join(save_path, "df_cal_pars.csv"))
-df_cal_pars_low.to_csv(os.path.join(save_path, "df_cal_pars_low.csv"))
-df_cal_pars_high.to_csv(os.path.join(save_path, "df_cal_pars_high.csv"))
 
 df_def_vsr_train.to_csv(os.path.join(save_path, "df_def_vsr_train.csv"))
 df_def_vsr_test.to_csv(os.path.join(save_path, "df_def_vsr_test.csv"))
@@ -207,5 +193,5 @@ df_cal_vsr_all.to_csv(os.path.join(save_path, "df_cal_vsr_all.csv"))
 
 for name in accu_vsr_pred_cal:
     print("Saving time series")
-    accu_vsr_pred_cal[name].to_csv(os.path.join(save_path, f"pred_vsr_cal_{name}.csv"))
-    accu_vsr_pred_def[name].to_csv(os.path.join(save_path, f"pred_vsr_def_{name}.csv"))
+    accu_vsr_pred_cal[name].to_csv(os.path.join(save_path, "pred_vsr_adm1_cal", f"{name}.csv"))
+    accu_vsr_pred_def[name].to_csv(os.path.join(save_path, "pred_vsr_adm1_default", f"{name}.csv"))
